@@ -1,14 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifndef MAX_CONNS
 #define MAX_CONNS 20
-#endif
+#define BUF_SIZE 8096
 
 int main()
 {
@@ -41,15 +42,23 @@ int main()
 
   while(1)
   {
-    int incoming_sock; 
+    int incoming_sock;
+    int bytes_read;
+    char* buffer = (char*)malloc(BUF_SIZE + 1);
+     
     if ((incoming_sock = accept(sock_id, (struct sockaddr*)&remote_addr, &remote_socklen)) == -1)
     {
       perror("error accepting connection");
       continue;
     }
-    char* message = "<h1>HELLO WORLD</h1";
-    send(incoming_sock, message, sizeof(message), 0);
+    if ((bytes_read = recv(incoming_sock, buffer, BUF_SIZE, 0)) == -1)
+    {
+      perror("error reading incoming request");
+      return 1;
+    }
+    buffer[bytes_read] = '\0';
+    printf("%s", buffer);
+    
     close(incoming_sock);
-
   }
 }
