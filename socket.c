@@ -12,24 +12,137 @@
 #define MAX_CONNS 20
 #define BUF_SIZE 8096
 
+typedef struct header_list header_list;
+
+typedef struct {
+  char* key;
+  char* value;
+} header_entry;
+
+struct header_list {
+  header_entry* entry;
+  header_list* next; 
+};
+
 typedef struct {
   char* verb;
   char* path;
-  char** headers;
+  char* version;
+  header_list* headers;
   char* body;
 } http_req;
 
+// parse_start_line reads line and parses verb, path, and http version into req.
+// It assumes that the provided line conforms to the structure of the start line of an HTTP
+// request as outlined here: https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
+int parse_start_line(FILE* req_fd,  http_req* req)
+{
+  // Setting line_ptr = NULL and line_size = 0 let's getline() allocate buffer space on-the-fly without us needing to alloc ourselves.
+  // Note we still must free() line_ptr on each read.
+  char* line_ptr = NULL;
+  size_t line_size = 0;
+  if (getline(&line_ptr, &line_size, req_fd) == -1)
+  {
+    printf("error reading line from request\n");
+    return 1;
+  }
+  
+  req->verb = strdup(strtok(line_ptr, " "));
+  req->path = strdup(strtok(NULL, " "));
+  req->version = strdup(strtok(NULL, "\r\n"));
+  free(line_ptr);
+  
+  if (req->verb == NULL || req->path == NULL || req->version == NULL)
+  {
+    printf("failed to parse HTTP start line");
+    return 1;
+  }
+  return 0;
+}
 
-// parse VERB, path, headers, and body of the incoming HTTP request and place in the http_req pointed to by req
+int parse_headers(FILE* req_fd, http_req* req)
+{
+  // Setting line_ptr = NULL and line_size = 0 let's getline() allocate buffer space on-the-fly without us needing to alloc ourselves.
+  // Note we still must free() line_ptr on each read.
+  char* line_ptr = NULL;
+  size_t line_size = 0;
+  char* delim = (char *)' ';
+  header_list* current;
+
+  header_list* headers;
+  req->headers = (header_list*)malloc(sizeof(header_list));
+  if (errno != 0)
+  {
+    perror("allocating header list memory");
+    return 1;
+  }
+
+  current = headers;
+  while(1)
+  {
+    if (getline(&line_ptr, &line_size, req_fd) == -1)
+    {
+      printf("error reading line from request\n");
+      return 1;
+    }
+    printf("HEADER_LINE: %s\n", line_ptr);
+    if (strcmp(line_ptr, "\r\n") == 0)
+    {
+      printf("in end\n");
+      current = NULL;
+      return 0;
+    }
+    printf("Got a HEADER\n");
+    header_entry* entry = (header_entry*)malloc(sizeof(header_entry));
+    entry->key = strdup(strtok(line_ptr, ": "));
+    entry->value = strdup(strtok(NULL, "\n"));
+    printf("Found a header: %s:%s\n", entry->key, entry->value);
+    current->next = (header_list*)malloc(sizeof(header_list));
+    if (errno != 0)
+    {
+      perror("allocating header list memory (next entry)");
+      return 1;
+    }
+    current = current->next;
+  }
+
+  return 0;
+}
+
+// parse verb, path, headers, and body of the incoming HTTP request and place in the http_req pointed to by req
 void parse_http_req(char* buffer, size_t buf_len, http_req* req)
 {
-  char* line_buf[BUF_SIZE];
-  size_t line_buf_size = sizeof(line_buf);
+  // Setting line_ptr = NULL and line_size = 0 let's getline() allocate buffer space on-the-fly without us needing to alloc ourselves.
+  // Note we still must free() line_ptr on each read.
+  char* line_ptr = NULL;
+  size_t line_size = 0;
+  char* delim = (char *)' ';
+
+  // Treating the buffer like a file let's us use simple functions for reading lines
   FILE* req_fd = fmemopen(buffer, buf_len, "r");
-  getline(line_buf, &line_buf_size, req_fd);
-  printf("contents of linebuf: %s\n", *line_buf);
-  // TODO so this works and grabs the first line
-  // TODO sep on ' ', then process further lines until empty line, then we have body then either EOF or end of buffer
+  
+  printf("Before start line\n");
+  // Get the HTTP start line and parse into req
+  if (parse_start_line(req_fd, req) == -1)
+  {
+    printf("error parsing start line\n");
+    return;
+  }
+
+  printf("Processing HTTP request...\nVERB: %s\nPATH: %s\nVERSION: %s\n", req->verb, req->path, req->version);
+  printf("Parsing headers...\n");
+  if (parse_headers(req_fd, req) == -1)
+  {
+    printf("error parsing headers\n");
+    return;
+  }
+  printf("Done parsing headers\n");
+  header_list* headers = req->headers;
+  while (headers != NULL)
+  {
+    printf("Key: %s; Value: %s\n", headers->entry->key, headers->entry->value);
+    headers = headers->next;
+  }
 }
 
 int handle_conn(int client_sock)
