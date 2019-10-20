@@ -25,12 +25,12 @@ int parse_start_line(FILE* req_fd,  http_req* req)
     printf("error reading line from request\n");
     return 1;
   }
-  
+
   req->verb = strdup(strtok(line_ptr, " "));
   req->path = strdup(strtok(NULL, " "));
   req->version = strdup(strtok(NULL, "\r\n"));
   free(line_ptr);
-  
+
   if (req->verb == NULL || req->path == NULL || req->version == NULL)
   {
     printf("failed to parse HTTP start line");
@@ -71,7 +71,7 @@ int parse_headers(FILE* req_fd, http_req* req)
     entry->key = strdup(strtok(line_ptr, ": "));
     entry->value = strdup(strtok(NULL, "\n"));
     current->entry = entry;
-    
+
     printf("Header key: %s\n", current->entry->key);
     free(line_ptr);
     line_ptr = NULL;
@@ -97,7 +97,7 @@ int parse_http_req(char* buffer, size_t buf_len, http_req* req)
 
   // Treating the buffer like a file let's us use simple functions for reading lines
   FILE* req_fd = fmemopen(buffer, buf_len, "r");
-  
+
   printf("Before start line\n");
   // Get the HTTP start line and parse into req
   if (parse_start_line(req_fd, req) == -1)

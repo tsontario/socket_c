@@ -44,4 +44,3 @@ int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 // handle_conn is the entry point of a forked server process, dedicated to
 // communicating with a specific TCP connection.
 int handle_conn(int client_sock);
-

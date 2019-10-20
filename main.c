@@ -71,7 +71,7 @@ int main()
   {
     int client_sock;
     pid_t child_process;
-     
+
     if ((client_sock = accept(server_fd, (struct sockaddr*)&remote_addr, &remote_socklen)) == -1)
     {
       perror("error accepting connection");
