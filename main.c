@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "socket.h"
+#include "request_handler.h"
 
 int main()
 {
@@ -92,16 +92,8 @@ int main()
       close(client_sock);
       continue;
     } else {
+      // We are in the forked child process. Handle the new connection in this subprocess from here on out
       handle_conn(client_sock);
-      // We are in the forked subprocess: handle the connection
-      // TODO put in a serve() function to clean things up
-      // TODO we expect every READ will be an HTTP request -> let's read it line by line and construct what we need
-      /*
-        <METHOD> <PATH> HTTP/1.1
-        <HEADER_KEY>: <HEADER_VAL>  (N times)
-        BLANK_LINE
-        <REQUEST_BODY>
-      */
     }
   }
 }

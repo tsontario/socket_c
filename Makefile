@@ -1,8 +1,11 @@
-all: main.o socket.o
-	gcc -o socket main.o socket.o
+all: main.o request_handler.o
+	gcc -o server main.o request_handler.o
 
-main.o: main.c socket.h
+main.o: main.c request_handler.h
 	gcc -c main.c
 
-socket.o: socket.c socket.h
-	gcc -c socket.c
+socket.o: request_handler.c request_handler.h
+	gcc -c request_handler.c
+
+clean:
+	rm *.o server

@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "socket.h"
+#include "request_handler.h"
 
 // parse_start_line reads line and parses verb, path, and http version into req.
 // It assumes that the provided line conforms to the structure of the start line of an HTTP
