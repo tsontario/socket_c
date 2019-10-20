@@ -50,20 +50,6 @@ int handle_conn(int client_sock)
   return 0;
 }
 
-char* print_headers(header_list* headers, char* prefix)
-{
-  if (prefix == NULL)
-  {
-    prefix = "";
-  }
-  header_list* current = headers;
-  while (current != NULL)
-  {
-    printf("%s%s: %s\n", prefix, current->entry->key, current->entry->value);
-    current = current->next;   
-  }
-}
-
 // parse verb, path, headers, and body of the incoming HTTP request and place in the http_req pointed to by req
 int parse_http_req(char* buf, size_t buf_len, http_req* req)
 {
@@ -103,3 +89,17 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
   return 0;
 }
 
+// print_headers is a utility for easily printing out all headers of a header_list*
+char* print_headers(header_list* headers, char* prefix)
+{
+  if (prefix == NULL)
+  {
+    prefix = "";
+  }
+  header_list* current = headers;
+  while (current != NULL)
+  {
+    printf("%s%s: %s\n", prefix, current->entry->key, current->entry->value);
+    current = current->next;
+  }
+}

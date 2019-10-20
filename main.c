@@ -11,6 +11,7 @@
 
 #include "request_handler.h"
 
+// TODO add getopt for easily setting PORT
 int main(int argc, char** argv)
 {
   // Constants...
