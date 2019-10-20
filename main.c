@@ -11,7 +11,7 @@
 
 #include "request_handler.h"
 
-int main()
+int main(int argc, char** argv)
 {
   // Constants...
   const char* HOST = "127.0.0.1";
@@ -44,13 +44,6 @@ int main()
     return 1;
   }
 
-  // Set SO_REUSEADDR option (eases local development). Should be removed when production-ready
-  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &SET, sizeof(int)) == -1)
-  {
-    perror("setting socket options to reuse local addr");
-    return 1;
-  }
-
   // Set the server to passively wait for connections, allowing MAX_CONNS requests to queue
   if (listen(server_fd, MAX_CONNS) == -1)
   {
@@ -60,13 +53,13 @@ int main()
 
   printf("Socket successfully bound, awaiting incoming connections...\n");
 
-  /*
-      *Main server loop*
-      
-      For each new incoming connection, we assign a dedicated port for the TCP stream.
-      We expect each incoming READ to be an HTTP request, which we handle appropriately.
-      If we are unable to parse the incoming request, we return an HTTP 500 response.
-  */
+/*
+    *Main server loop*
+    
+    For each new incoming connection, we assign a dedicated port for the TCP stream.
+    We expect each incoming READ to be an HTTP request, which we handle appropriately.
+    If we are unable to parse the incoming request, we return an HTTP 500 response.
+*/
   while(1)
   {
     int client_sock;

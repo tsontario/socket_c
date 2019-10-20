@@ -27,20 +27,13 @@ typedef struct {
   char* body;
 } http_req;
 
-// parse_start_line is a helper function for parsing the first line
-// of an HTTP request, which contains the verb, path, and HTTP version.
-// The parsed entries are stored in http_req.
-int parse_start_line(FILE*, http_req*);
-
-// parse_headers is a helper function for parsing the header entries of
-// an HTTP request. The parsed entries are stored in req->headers
-int parse_headers(FILE*, http_req*);
+// handle_conn is the entry point of a forked server process, dedicated to
+// communicating with a specific TCP connection.
+int handle_conn(int client_sock);
 
 // parse_http_req parses the HTTP request stored in buffer and stores
 // the parsed results in req. A non-zero error code is returned in the
 // event of a parse failure.
 int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 
-// handle_conn is the entry point of a forked server process, dedicated to
-// communicating with a specific TCP connection.
-int handle_conn(int client_sock);
+
