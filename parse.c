@@ -11,7 +11,7 @@
 /*
   parse.c contains code related to parsing the contents of an HTTP request into an http_req* structure.
 
-  The parsing is done in 3 passes:
+  The parsing is done in 3 parts:
   - in parse_start_line, we read the first line of the request and return the verb, path, and HTTP version of the request
   - in parse_headers, we find all HTTP headers and store them as a linked list pointed to by req->headers
   - Finally, we read the body and store it in req->body. If no body exists, a generic stub noting this fact is placed
