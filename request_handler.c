@@ -90,7 +90,7 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
 }
 
 // print_headers is a utility for easily printing out all headers of a header_list*
-char* print_headers(header_list* headers, char* prefix)
+void print_headers(header_list* headers, char* prefix)
 {
   if (prefix == NULL)
   {

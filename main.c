@@ -14,9 +14,22 @@
 // TODO add getopt for easily setting PORT
 int main(int argc, char** argv)
 {
+  char* HOST = "127.0.0.1";
+  int PORT = 8989;
+  int c;
+
+  while ((c = getopt(argc, argv, "p::")) != -1)  {
+    switch(c)
+    {
+      case 'p':
+        PORT = atoi(optarg);
+        break;
+    }
+  }
+
   // Constants...
-  const char* HOST = "127.0.0.1";
-  const int PORT = 8989;
+  // const char* HOST = "127.0.0.1";
+  // const int PORT = 8989;
   const int SET = 1;
 
   // Server variables

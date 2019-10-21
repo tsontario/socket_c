@@ -1,14 +1,16 @@
-all: parse.o request_handler.o main.o
-	gcc -o server main.o parse.o request_handler.o
+FLAGS = -std=gnu99
 
-main.o:
-	gcc -c main.c
+all: main.o request_handler.o parse.o
+	gcc $(FLAGS) -o server main.o parse.o request_handler.o
+
+main.o: request_handler.o parse.o
+	gcc $(FLAGS) -c main.c
 
 request_handler.o: parse.o
-	gcc -c request_handler.c 
+	gcc $(FLAGS) -c request_handler.c 
 
 parse.o: parse.c
-	gcc -c parse.c
+	gcc $(FLAGS) -c parse.c
 
 clean:
 	rm *.o server

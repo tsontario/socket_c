@@ -36,4 +36,4 @@ int handle_conn(int client_sock);
 // event of a parse failure.
 int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 
-
+void print_headers(header_list* headers, char* prefix);
