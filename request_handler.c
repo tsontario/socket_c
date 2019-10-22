@@ -23,7 +23,7 @@ int handle_conn(int client_sock)
   int bytes_read;
   http_req request;
   char* buffer = (char*)malloc(BUF_SIZE + 1);
-  if (errno != 0)
+  if (buffer == NULL)
   {
     perror("error allocating buffer");
     close(client_sock);
@@ -40,7 +40,11 @@ int handle_conn(int client_sock)
   }
 
   buffer[bytes_read+1] = '\0';  // Defensively ensure we have a null byte available in case request was too big (we just drop whatever didn't fit)
-  parse_http_req(buffer, bytes_read, &request);
+  if ((parse_http_req(buffer, bytes_read, &request)) == -1)
+  {
+    printf("Something bad happened\n");
+    return 1;
+  }
 
   if (close(client_sock) == -1)
   {
@@ -55,7 +59,7 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
 {
   // Treating the buffer like as a FILE* let's us use cleaner semantics for reading the request
   FILE* req_fd = fmemopen(buf, buf_len, "r");
-  if (errno != 0)
+  if (req_fd == NULL)
   {
     perror("fmemopen parse_http_req");
     return 1;
@@ -84,7 +88,7 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
   printf("> New Request:\n>\t%s %s %s\n", req->verb, req->path, req->version);
   print_headers(req->headers, ">\t");
   printf(">\n");
-  printf(">\t%s\n\n", req->body);
+  printf(">\n%s\n\n", req->body);
 
   return 0;
 }

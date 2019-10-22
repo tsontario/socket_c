@@ -58,7 +58,7 @@ int parse_headers(FILE* req_fd, http_req* req)
   size_t line_size = 0;
 
   req->headers = (header_list*)malloc(sizeof(header_list));
-  if (errno != 0)
+  if (req->headers == NULL)
   {
     perror("allocating header list memory");
     return 1;
@@ -87,7 +87,7 @@ int parse_headers(FILE* req_fd, http_req* req)
     free(line_ptr);
     line_ptr = NULL;
     current->next = (header_list*)malloc(sizeof(header_list));
-    if (errno != 0)
+    if (current->next == NULL)
     {
       perror("allocating header list memory (next entry)");
       return 1;
@@ -105,24 +105,33 @@ int parse_headers(FILE* req_fd, http_req* req)
 int parse_body(FILE* req_fd, http_req* req)
 {
   // It is likely the body of the request is empty, so we need to account for this case
+  // TODO centralize req mallocs and initialization
+  req->body = (char*)malloc(sizeof(char) * BUF_SIZE);
   char buf[BUF_SIZE+1];
   bool first_pass = true;
   for(int i=0; i<BUF_SIZE;++i)
   {
-    char next = (char)fgetc(req_fd);
-    if (next == EOF)
+    char next = fgetc(req_fd);
+    if (feof(req_fd) != 0)
     {
+      clearerr(req_fd);
       if (first_pass == true)
       { 
         strcpy(req->body, "<EMPTY REQUEST BODY>");
         return 0;
       } else {
         buf[i] = '\0';
-        strcpy(req->body, buf);
+        strncpy(req->body, buf, BUF_SIZE);
         return 0;
       }
+    } else if (ferror(req_fd) != 0)
+    {
+      printf("error reading request body\n");
+      clearerr(req_fd);
+      return 1;
     }
     first_pass = false;
     buf[i] = next;
   }
+  return 0;
 }
