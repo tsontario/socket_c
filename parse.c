@@ -58,7 +58,7 @@ int parse_headers(FILE* req_fd, http_req* req)
   size_t line_size = 0;
 
   req->headers = (header_list*)malloc(sizeof(header_list));
-  if (errno != 0)
+  if (req->headers == NULL)
   {
     perror("allocating header list memory");
     return 1;
@@ -87,7 +87,7 @@ int parse_headers(FILE* req_fd, http_req* req)
     free(line_ptr);
     line_ptr = NULL;
     current->next = (header_list*)malloc(sizeof(header_list));
-    if (errno != 0)
+    if (current->next == NULL)
     {
       perror("allocating header list memory (next entry)");
       return 1;

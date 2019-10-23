@@ -23,7 +23,7 @@ int handle_conn(int client_sock)
   int bytes_read;
   http_req request;
   char* buffer = (char*)malloc(BUF_SIZE + 1);
-  if (errno != 0)
+  if (buffer == NULL)
   {
     perror("error allocating buffer");
     close(client_sock);
@@ -55,7 +55,7 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
 {
   // Treating the buffer like as a FILE* let's us use cleaner semantics for reading the request
   FILE* req_fd = fmemopen(buf, buf_len, "r");
-  if (errno != 0)
+  if (req_fd == NULL)
   {
     perror("fmemopen parse_http_req");
     return 1;
