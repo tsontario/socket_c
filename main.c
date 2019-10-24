@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv)
 {
-  char* HOST = "127.0.0.1";
+  in_addr_t HOST = htonl(INADDR_ANY); // Bind to all available interfaces
   int PORT = 8989;
   int c;
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
   socklen_t remote_socklen;
   int server_fd;
 
-  printf("\x1b[39;1mSetting up local server: \x1b[32;1mhttp://%s:%d\x1b[39m\n", HOST, PORT);
+  printf("\x1b[39;1mSetting up local http server (binding to all inet interfaces) on port \x1b[32;1m%d\x1b[39m\n",PORT);
 
   // Create the socket
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
   }
   // Configure to listen on HOST:PORT
   server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = inet_addr(HOST);
+  server_addr.sin_addr.s_addr = HOST;
   server_addr.sin_port = htons(PORT);
 
   // Bind socket to server_addr
