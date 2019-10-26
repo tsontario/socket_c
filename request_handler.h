@@ -27,6 +27,15 @@ typedef struct {
   char* body;
 } http_req;
 
+typedef struct {
+  char* protocol_version;
+  int status_code;
+  char* status_text;
+  header_list* headers;
+  char* body;
+  FILE* body_fd;
+} http_resp;
+
 // handle_conn is the entry point of a forked server process, dedicated to
 // communicating with a specific TCP connection.
 int handle_conn(int client_sock);
@@ -36,4 +45,10 @@ int handle_conn(int client_sock);
 // event of a parse failure.
 int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 
+// serve_request attempts to create a valid HTTP response for the request
+// encapsulated in req. The return value is the HTTP status code to be used in the response
+int serve_request(int client_sock, http_req* req, http_resp* resp);
+
 void print_headers(header_list* headers, char* prefix);
+
+char* get_content_type(char* path);
