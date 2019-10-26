@@ -49,6 +49,13 @@ int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 // encapsulated in req. The return value is the HTTP status code to be used in the response
 int serve_request(int client_sock, http_req* req, http_resp* resp);
 
+// write_http_error can be called when processing a given request fails
+// before beginning to write the response. It simply returns the first
+// line of the HTTP response and closes the connection
+int write_http_error(int client_sock, int status_code);
+
 void print_headers(header_list* headers, char* prefix);
 
 char* get_content_type(char* path);
+
+char* get_content_length(FILE* file);
