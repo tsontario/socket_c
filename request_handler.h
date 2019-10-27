@@ -27,6 +27,16 @@ typedef struct {
   char* body;
 } http_req;
 
+// http_resp stores information necessary to construct and write an HTTP response
+typedef struct {
+  char* protocol_version;
+  int status_code;
+  char* status_text;
+  header_list* headers;
+  char* body;
+  FILE* body_fd;
+} http_resp;
+
 // handle_conn is the entry point of a forked server process, dedicated to
 // communicating with a specific TCP connection.
 int handle_conn(int client_sock);
@@ -36,4 +46,22 @@ int handle_conn(int client_sock);
 // event of a parse failure.
 int parse_http_req(char* buffer, size_t buf_len, http_req* req);
 
+// serve_response attempts to create a valid HTTP response for the request
+// encapsulated in req. The return value is the HTTP status code to be used in the response
+int serve_response(int client_sock, http_req* req, http_resp* resp);
+
+// write_http_error can be called when processing a given request fails
+// before beginning to write the response. It simply returns the first
+// line of the HTTP response and closes the connection
+void write_http_error(int client_sock, int status_code);
+
+// get_content_type attemps to discern the (MIME) Content-Type associated
+// with path. If unable to do so, get_content_type returns NULL
+char* get_content_type(char* path);
+
+// get_content_length returns the length, in bytes, of file.
+// On return, file's current position will be set to the beginning of file
+char* get_content_length(FILE* file);
+
+// print_headers is a utility method for outputting headers (e.g. to log output)
 void print_headers(header_list* headers, char* prefix);

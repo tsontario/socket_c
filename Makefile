@@ -6,7 +6,7 @@ all: main.o request_handler.o parse.o
 main.o: main.c request_handler.h
 	gcc $(FLAGS) -c main.c
 
-request_handler.o: request_handler.c parse.h
+request_handler.o: request_handler.c parse.h request_handler.h
 	gcc $(FLAGS) -c request_handler.c 
 
 parse.o: parse.c parse.h
