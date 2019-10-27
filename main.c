@@ -46,7 +46,10 @@ int main(int argc, char** argv)
     return 1;
   }
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &SET, sizeof(int)) < 0)
+  {
     printf("setsockopt(SO_REUSEADDR) failed");
+    return 1;
+  }
   // Configure to listen on HOST:PORT
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = HOST;

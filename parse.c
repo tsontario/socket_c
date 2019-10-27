@@ -52,9 +52,9 @@ int parse_start_line(FILE* req_fd,  http_req* req)
 // pointed to by req->headers
 int parse_headers(FILE* req_fd, http_req* req)
 {
-  // Setting line_ptr = NULL and line_size = 0 let's getline() allocate buffer space on-the-fly without us needing to alloc ourselves.
+  // Setting buf = NULL and line_size = 0 let's getline() allocate buffer space on-the-fly without us needing to alloc ourselves.
   // Note we still must free() line_ptr on each read.
-  char* line_ptr = NULL;
+  char* buf = NULL;
   size_t line_size = 0;
 
   req->headers = (header_list*)malloc(sizeof(header_list));
@@ -68,24 +68,24 @@ int parse_headers(FILE* req_fd, http_req* req)
   header_list* prev = NULL;
   while(1)
   {
-    if (getline(&line_ptr, &line_size, req_fd) == -1)
+    if (getline(&buf, &line_size, req_fd) == -1)
     {
       printf("error reading line from request\n");
       return 1;
     }
-    if (strcmp(line_ptr, "\r\n") == 0)
+    if (strcmp(buf, "\r\n") == 0)
     {
       prev->next = NULL;
       break;
     }
 
     header_entry* entry = (header_entry*)malloc(sizeof(header_entry));
-    entry->key = strdup(strtok(line_ptr, ": "));
+    entry->key = strdup(strtok(buf, ": "));
     entry->value = strdup(strtok(NULL, "\n"));
     current->entry = entry;
 
-    free(line_ptr);
-    line_ptr = NULL;
+    free(buf);
+    buf = NULL;
     current->next = (header_list*)malloc(sizeof(header_list));
     if (current->next == NULL)
     {

@@ -49,6 +49,7 @@ int handle_conn(int client_sock)
   if ((parse_http_req(buffer, bytes_read, &request)) == -1)
   {
     printf("Something bad happened\n");
+    close(client_sock);
     return 1;
   }
 
@@ -57,7 +58,6 @@ int handle_conn(int client_sock)
   {
     if (response_code >= 400)
     {
-      printf("IN ERROR CODE %d\n", response_code);
       write_http_error(client_sock, response_code);
     } else {
       printf("error in serverequest");
@@ -143,6 +143,10 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
   memset(buf, 0, BUF_SIZE);
 
   // We are ready to send
+  // Currently, we only make a Content-Type and Content-Length header for the response.
+  // For expedience, I've done this straight inline. A better approach will be to
+  // have an interface for adding entries to the header list, and feed it a list of generator functions
+  // as needed
   resp->status_code = 200;
   header_list* header = (header_list*)malloc(sizeof(header_list));
   resp->headers = header;
@@ -214,6 +218,9 @@ char* get_content_type(char* path)
   } else if ((strncmp(extension, ".jpg", sizeof(char) * 5)) == 0)
   {
     content_type = "image/jpeg";
+  } else if ((strncmp(extension, ".js", sizeof(char) * 4)) == 0)
+  {
+    content_type = "application/javascript";
   } else if ((strncmp(extension, ".jpeg", sizeof(char) * 6)) == 0)
   {
     content_type = "image/jpeg";
