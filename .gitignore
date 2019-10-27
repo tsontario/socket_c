@@ -1,6 +1,10 @@
+# Compiled artifacts
 *.o
-socket
+myServer
+
+# Workspace settings
 .vscode/
 
+# Don't commit 'large' files (used for local testing)
 web/*.mp3
 web/*.jpg

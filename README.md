@@ -22,7 +22,7 @@ Socket_C is a basic HTTP web server using TCP sockets for the transport layer.
 
 ## Running
 
-Basic usage: `myserver [-p PORT]`
+Basic usage: `myServer [-p PORT]`
 
 By default, `myServer` binds to all available network interfaces, and listens on port `8989`. The port number can be configured by passing in `-p` followed by a valid port number.
 
@@ -59,12 +59,12 @@ As code is forever a work in progress, the following list describes currently kn
 
 - `http_req` and `http_resp` structs are not properly destroyed. Since each connection is forked (and we do not use Keep-Alive connections), the risk of `ENOMEN` due to memory leaks is quite low. Regardless, it would be preferable to better-handle the lifecycle of these objects.
 - Similar to the above, `char*` with `malloc` is used in numerous places where a stack-local buffer would be preferable.
-- Headers (for both requests and responses) are modeled as linked lists. However, the implementation lacks useful helper methods to simplify their use. For example, constructing the response headers is done 'manually' at the moment is absolutely not a nice way to do that.
+- Headers (for both requests and responses) are modeled as linked lists. However, the implementation lacks useful helper methods to simplify their use. For example, constructing the response headers is done 'manually' at the moment that is absolutely not a nice way to do that.
 - While an attempt has been made to have robust error handling, there are still some areas that lack requisite checks. Note that the most critical operations are guarded, but there is still more work to be done here.
 - Log output has a primitive form: migrating to structured (e.g. JSON) logging would be a vast improvement. In addition, all response bodies are logged, even if they are non-textual data.
 
 ## Assumptions
 
 - Entities (e.g. client/server) communicate using HTTP/1.1 according to the conventions outlined in [RFC 7230](https://tools.ietf.org/html/rfc7230).
-- The size of a request's body are no greater than 8096 bytes: excess data is simply dropped. Note this refers _only_ to the body and not the initial request-line nor headers list of the request
+- The size of a request's body are no greater than 8096 bytes: excess data is simply dropped. Note this refers _only_ to the body and not the initial request-line nor headers list of the request.
 - TCP connections are not reused and are closed after each, atomic, HTTP request. A further improvement could be to handle TCP reuse, but that has not been implemented yet.
