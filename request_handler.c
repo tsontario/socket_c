@@ -55,7 +55,10 @@ int handle_conn(int client_sock)
   int response_code;
   if ((response_code = serve_response(client_sock, &request, &response)) != 0)
   {
-    if (response_code >= 400)
+    if (response_code == 404)
+    {
+      serve_404_page(client_sock, &request, &response);
+    } else if (response_code >= 400)
     {
       write_http_error(client_sock, response_code);
     } else {
@@ -265,4 +268,11 @@ void print_headers(header_list* headers, char* prefix)
     printf("%s%s: %s\n", prefix, current->entry->key, current->entry->value);
     current = current->next;
   }
+}
+
+void serve_404_page(int client_sock, http_req* request, http_resp* response)
+{
+  char buf[BUF_SIZE];
+  sprintf(buf, "HTTP/1.1 404 NOTFOUND\nContent-Type: text/html\n\n<html><body><h1>404 Not Found</h1></body></html>\n");
+  write(client_sock, &buf, strlen(buf));
 }
