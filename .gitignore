@@ -1,3 +1,6 @@
 *.o
 socket
 .vscode/
+
+web/*.mp3
+web/*.jpg
