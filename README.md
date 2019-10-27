@@ -1,3 +1,5 @@
+Socket_C is a basic HTTP web server using TCP sockets for the transport layer.
+
 - [Instructions for users](#instructions-for-users)
   - [Building](#building)
   - [Running](#running)
@@ -8,8 +10,6 @@
   - [Error handling](#error-handling)
   - [Work outstanding](#work-outstanding)
   - [Assumptions](#assumptions)
-
-This repo implements a basic HTTP web server using TCP sockets for the transport layer.
 
 # Instructions for users
 
