@@ -224,7 +224,6 @@ char* get_content_type(char* path)
   {
     content_type = "video/mp4";
   } else if ((strncmp(extension, ".ico", sizeof(char) * 5)) == 0) {
-    printf("I AM HERE\n");
     content_type = "image/x-icon";
   } else {
     content_type = NULL;
