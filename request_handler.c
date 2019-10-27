@@ -53,16 +53,17 @@ int handle_conn(int client_sock)
   }
 
   int response_code;
-  if ((response_code = serve_request(client_sock, &request, &response)) != 0)
+  if ((response_code = serve_response(client_sock, &request, &response)) != 0)
   {
     if (response_code >= 400)
     {
+      printf("IN ERROR CODE %d\n", response_code);
       write_http_error(client_sock, response_code);
-      return 1;
     } else {
       printf("error in serverequest");
-      return 1;
     }
+    close(client_sock);
+    return 1;
   }
   if (close(client_sock) == -1)
   {
@@ -103,17 +104,18 @@ int parse_http_req(char* buf, size_t buf_len, http_req* req)
     return 422;
   }
 
-  printf("> New Request:\n>\t%s %s %s\n", req->verb, req->path, req->version);
+  printf("> REQUEST:\n>\t%s %s %s\n", req->verb, req->path, req->version);
   print_headers(req->headers, ">\t");
   printf(">\n");
-  printf(">\n%s\n\n", req->body);
+  printf(">%s\n\n", req->body);
 
   return 0;
 }
 
-// serve_request serves the request specified by req, using resp 
-int serve_request(int client_sock, http_req* req, http_resp* resp)
+// serve_response serves the request specified by req, using resp 
+int serve_response(int client_sock, http_req* req, http_resp* resp)
 {
+  printf("< RESPONSE:\n");
   char* local_path = (char*)malloc(strlen(WEB_DIR) + strlen(req->path) + 1); // +1 for \0 byte
   strncat(local_path, WEB_DIR, strlen(WEB_DIR));
   strncat(local_path, req->path, strlen(req->path));
@@ -156,7 +158,8 @@ int serve_request(int client_sock, http_req* req, http_resp* resp)
   header->entry = (header_entry*)malloc(sizeof(header_entry));
   header->entry->key = "Content-Length";
   header->entry->value = get_content_length(resp->body_fd);
-  print_headers(resp->headers, "");
+  printf("<\tHTTP/1.1 200 OK\n");
+  print_headers(resp->headers, "<\t");
   if ((sprintf(buf, "HTTP/1.1 200 OK\n%s: %s\n%s: %s\n\n",
     resp->headers->entry->key, resp->headers->entry->value,
     resp->headers->next->entry->key, resp->headers->next->entry->value
@@ -179,16 +182,21 @@ int serve_request(int client_sock, http_req* req, http_resp* resp)
       return 1;
     }
     write(client_sock, buf, num_bytes);
+    printf("%s", buf);
   }
+  printf("\n< **END OF MESSAGE**\n");
   return 0;
 }
 
 // write_http_error can be called when processing a given request fails
 // before beginning to write the response. It simply returns the first
 // line of the HTTP response and closes the connection
-int write_http_error(int client_socket, int status_code)
+void write_http_error(int client_socket, int status_code)
 {
-  return 0;
+  char buf[BUF_SIZE];
+  sprintf(buf, "HTTP/1.1 %d ERROR", status_code);
+  printf("<\t%s\n", buf);
+  write(client_socket, buf, strlen(buf));
 }
 
 // Callers are responsible for freeing the returned char* returned by get_content_type

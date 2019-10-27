@@ -117,7 +117,7 @@ int parse_body(FILE* req_fd, http_req* req)
       clearerr(req_fd);
       if (first_pass == true)
       { 
-        strcpy(req->body, "<EMPTY REQUEST BODY>");
+        strcpy(req->body, " <EMPTY REQUEST BODY>");
         return 0;
       } else {
         buf[i] = '\0';
