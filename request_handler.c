@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -48,7 +47,7 @@ int handle_conn(int client_sock)
   buffer[bytes_read+1] = '\0';  // Defensively ensure we have a null byte available in case request was too big (we just drop whatever didn't fit)
   if ((parse_http_req(buffer, bytes_read, &request)) == -1)
   {
-    printf("Something bad happened\n");
+    printf("error parsing HTTP request\n");
     close(client_sock);
     return 1;
   }
@@ -60,7 +59,7 @@ int handle_conn(int client_sock)
     {
       write_http_error(client_sock, response_code);
     } else {
-      printf("error in serverequest");
+      printf("error in serve response");
     }
     close(client_sock);
     return 1;
@@ -136,11 +135,6 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
     return 500;
   }
   free(local_path);
-  fseek(resp->body_fd, 0, SEEK_END);
-  long content_length = ftell(resp->body_fd);
-  fseek(resp->body_fd, -content_length, SEEK_END);
-  char* buf = (char*)malloc(sizeof(char)*BUF_SIZE);
-  memset(buf, 0, BUF_SIZE);
 
   // We are ready to send
   // Currently, we only make a Content-Type and Content-Length header for the response.
@@ -162,22 +156,28 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
   header->entry = (header_entry*)malloc(sizeof(header_entry));
   header->entry->key = "Content-Length";
   header->entry->value = get_content_length(resp->body_fd);
+
   printf("<\tHTTP/1.1 200 OK\n");
   print_headers(resp->headers, "<\t");
+
+  // Construct response status line and header lines, then write to the client socket
+  char* buf = (char*)malloc(sizeof(char)*BUF_SIZE);
+  memset(buf, 0, BUF_SIZE);
   if ((sprintf(buf, "HTTP/1.1 200 OK\n%s: %s\n%s: %s\n\n",
     resp->headers->entry->key, resp->headers->entry->value,
     resp->headers->next->entry->key, resp->headers->next->entry->value
   )) < 0)
   {
-    perror("something's wrong");
+    perror("error writing response status line and headers");
     return 1;
-  };
+  }
   if ((write(client_sock, buf, strlen(buf))) == -1)
   {
     perror("writing to client socket");
     return 1;
   }
 
+  // Write the body of the response into the client socket
   ssize_t num_bytes;
   while ((num_bytes = fread(buf, sizeof(char), BUF_SIZE, resp->body_fd)) != 0)
   {
@@ -186,7 +186,10 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
       return 1;
     }
     write(client_sock, buf, num_bytes);
-    printf("%s", buf);
+    if (strncmp(get_content_type(req->path), "text/html", strlen("text/html")) == 0)
+    {
+      printf("%s", buf);
+    }
   }
   printf("\n< **END OF MESSAGE**\n");
   return 0;

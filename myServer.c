@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,25 +10,22 @@
 
 #include "request_handler.h"
 
+// main instantiates a new TCP/HTTP server. Requests are handled by forking the main server
+// and having the child process take care of a given, individual, connection
 int main(int argc, char** argv)
 {
   in_addr_t HOST = htonl(INADDR_ANY); // Bind to all available interfaces
   int PORT = 8989;
-  int c;
 
-  while ((c = getopt(argc, argv, "p::")) != -1)  {
-    switch(c)
+  int opt;
+  while ((opt = getopt(argc, argv, "p::")) != -1)  {
+    switch(opt)
     {
       case 'p':
         PORT = atoi(optarg);
         break;
     }
   }
-
-  // Constants...
-  // const char* HOST = "127.0.0.1";
-  // const int PORT = 8989;
-  const int SET = 1;
 
   // Server variables
   struct sockaddr_in server_addr, remote_addr;
@@ -45,9 +41,11 @@ int main(int argc, char** argv)
     perror("error creating socket");
     return 1;
   }
+  // set SO_REUSEADDR so we can rebind to the same port quickly in the event of a restart
+  const int SET = 1;
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &SET, sizeof(int)) < 0)
   {
-    printf("setsockopt(SO_REUSEADDR) failed");
+    printf("setsockopt(SO_REUSEADDR) failed\n");
     return 1;
   }
   // Configure to listen on HOST:PORT
@@ -74,9 +72,9 @@ int main(int argc, char** argv)
 /*
     *Main server loop*
     
-    For each new incoming connection, we assign a dedicated port for the TCP stream.
-    We expect each incoming READ to be an HTTP request, which we handle appropriately.
-    If we are unable to parse the incoming request, we return an HTTP 500 response.
+    The server forks on each new connection: the parent process immediately closes the client socket and
+    begins waiting for a new connection. The child process the takes responsibility for servicing the request.
+    We expect each incoming READ to be an HTTP request, otherwise we return an appropriate HTTP error.
 */
   while(1)
   {
@@ -85,6 +83,7 @@ int main(int argc, char** argv)
 
     if ((client_sock = accept(server_fd, (struct sockaddr*)&remote_addr, &remote_socklen)) == -1)
     {
+      // Log the error but don't kill the server (the problem could be intermittent)
       perror("error accepting connection");
       continue;
     }

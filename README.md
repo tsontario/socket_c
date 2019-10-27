@@ -61,7 +61,7 @@ As code is forever a work in progress, the following list describes currently kn
 - Similar to the above, `char*` with `malloc` is used in numerous places where a stack-local buffer would be preferable.
 - Headers (for both requests and responses) are modeled as linked lists. However, the implementation lacks useful helper methods to simplify their use. For example, constructing the response headers is done 'manually' at the moment that is absolutely not a nice way to do that.
 - While an attempt has been made to have robust error handling, there are still some areas that lack requisite checks. Note that the most critical operations are guarded, but there is still more work to be done here.
-- Log output has a primitive form: migrating to structured (e.g. JSON) logging would be a vast improvement. In addition, all response bodies are logged, even if they are non-textual data.
+- Log output has a primitive form: migrating to structured (e.g. JSON) logging would be a vast improvement.
 
 ## Assumptions
 
