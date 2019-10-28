@@ -121,6 +121,13 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
   char* local_path = (char*)malloc(strlen(WEB_DIR) + strlen(req->path) + 1); // +1 for \0 byte
   strncat(local_path, WEB_DIR, strlen(WEB_DIR));
   strncat(local_path, req->path, strlen(req->path));
+  char EMPTY_PATH[2] = "/";
+  if ((strncmp(req->path, EMPTY_PATH, 2)) == 0)
+  {
+    // Per assignment specification, / returns a 404
+    return 404;
+  }
+
   // Check path exists
   struct stat st;
   if ((stat(local_path, &st)) == -1)
@@ -152,6 +159,7 @@ int serve_response(int client_sock, http_req* req, http_resp* resp)
   header->entry->value = get_content_type(req->path);
   if ((header->entry->value) == NULL)
   {
+    printf("Expected Content-Type but got NULL");
     return 422;
   }
   header = (header_list*)malloc(sizeof(header_list));
