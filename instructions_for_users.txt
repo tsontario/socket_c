@@ -16,5 +16,6 @@ Assumptions:
 - Entities (e.g. client/server) communicate using HTTP/1.1 according to the conventions outlined in [RFC 7230](https://tools.ietf.org/html/rfc7230).
 - The size of a request's body are no greater than 8096 bytes: excess data is simply dropped. Note this refers _only_ to the body and not the initial request-line nor headers list of the request.
 - TCP connections are not reused and are closed after each, atomic, HTTP request. A further improvement could be to handle TCP reuse, but that has not been implemented yet.
+- Ignoring outstanding memory leaks for now (really only a concern for windows binary)
 
 For more details, consult README.md.
