@@ -1,0 +1,20 @@
+BUILDING:
+
+OSX/LINUX: from project root, run `make`. This will build a binary, myServer.
+WINDOWS: from project root, run `make windows`. This will build a binary, myServerWINDOWS.
+To build the docker image, run scripts/build_container.sh.
+
+To run, simply call ./myServer and the server will begin listening on port 8989
+For docker, call scripts/run_container.sh. To stream logs, call docker logs <CONTAINER_ID> -f
+
+WEB FILES:
+From project root, web files are served from the `web` directory. To make new files available to the server, simply place them in the `web` folder.
+NOTE: if using docker, you will need to rebuild the container before running
+
+Assumptions:
+
+- Entities (e.g. client/server) communicate using HTTP/1.1 according to the conventions outlined in [RFC 7230](https://tools.ietf.org/html/rfc7230).
+- The size of a request's body are no greater than 8096 bytes: excess data is simply dropped. Note this refers _only_ to the body and not the initial request-line nor headers list of the request.
+- TCP connections are not reused and are closed after each, atomic, HTTP request. A further improvement could be to handle TCP reuse, but that has not been implemented yet.
+
+For more details, consult README.md.

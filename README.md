@@ -17,7 +17,7 @@ Socket_C is a basic HTTP web server using TCP sockets for the transport layer.
 
 - Linux: run `make` (requires `build-essentials`)
 - OSX: run `make` (requires `Xcode`)
-- Windows: _this build has not been tested on a windows machine_
+- Windows: _this program uses UNIX fork API and will not run on Windows_. If using Windows, consider using the docker container.
 - Docker: from project root, run `scripts/build_container.sh` to build, and `scripts/run_container.sh` to run. Port-forwarding is set to `8989:8989`
 
 ## Running
@@ -43,7 +43,7 @@ Currently supported file formats/MIME types:
 - `.mp4 -> video/mp4`
 - `.ico -> image/x-icon`
 
-# Design
+# Release notes
 
 ## Basic design
 
