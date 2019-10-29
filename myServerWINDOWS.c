@@ -10,6 +10,12 @@
 
 #include "request_handler.h"
 
+/*
+  myServerWINDOWS is for compatibility with Windows systems. It foregoes the use of forking
+  new client connections since that is not supported with the same API as Linux/OSX. To compile for windows,
+  run `make windows`, which build the binary `myServerWINDOWS`
+*/
+
 // main instantiates a new TCP/HTTP server. Requests are handled by forking the main server
 // and having the child process take care of a given, individual, connection
 int main(int argc, char** argv)
